@@ -1,0 +1,25 @@
+{
+  "name": "chai-backend",
+  "version": "1.0.0",
+  "description": "A backend from chai aur code channel",
+  "keywords": [
+    "javascript",
+    "backend",
+    "myself"
+  ],
+  "homepage": "https://github.com/theritikkk/Chai-Backend#readme",
+  "bugs": {
+    "url": "https://github.com/theritikkk/Chai-Backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theritikkk/Chai-Backend.git"
+  },
+  "license": "ISC",
+  "author": "Ritik Raj",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
