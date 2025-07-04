@@ -564,6 +564,7 @@ export {
     loginUser,
     logoutUser,
     refeshAccessToken,
+    changeCurrentPassword,
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
