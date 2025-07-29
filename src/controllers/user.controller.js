@@ -25,7 +25,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
         
     } catch (error) {
 
-        throw new ApiError( 500 , " Something went wrong while generating refresh ans access token. ")
+        throw new ApiError( 500 , " Something went wrong while generating refresh and access token. ")
 
     }
 
@@ -35,72 +35,92 @@ const generateAccessAndRefreshTokens = async(userId) => {
 
 const registerUser = asyncHandler( async (req, res) => {
 
-    // get user details from frontend
-    // validation - not empty
-    // check if user already exits : username, email
-    // check for images, check for avatar
-    // upload them to cloudinary, avatar
-    // create user object - create entry in db
-    // remove password and refresh token field from response
-    // if ( check for user creation )
+    // get user details from frontend   - 1
+    // validation - not empty           - 2
+    // check if user already exits : username, email     - 3
+    // check for images, check for avatar       - 4 
+    // upload them to cloudinary, avatar        - 5
+    // create user object - create entry in db      - 6
+    // remove password and refresh token field from response     - 7
+    // if ( check for user creation )       - 8
     // return response 
     // else return error
 
+
+
+    // get user details from frontend   - 1
     const {fullName, email, username, password } = req.body
     //console.log("email: ", email);
 
+
+    // validation that the given data is - not empty           - 2
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
 
+
+    // check if user already exits like : username, email       - 3
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
     if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
+        throw new ApiError( 409, "User with email or username already exists" )
     }
     // console.log(req.files);
 
+
+    // check for images, check for avatar                       - 4 
     const avatarLocalPath = req.files?.avatar[0]?.path;
     //const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
+    // to find the path of cover image                          - 4
     let coverImageLocalPath;
     if( req.files && Array.isArray( req.files.coverImage ) && req.files.coverImage.length > 0 ) {
         coverImageLocalPath = req.files.coverImage[0].path
     }
     
-
+    // checking the availabilty of the avatar's local path      - 4
     if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError( 400, "Avatar file is required" )
     }
 
+
+    // upload them to cloudinary, avatar        - 5
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
+    // checking if the avatar file is uploaded on cloudinary or not
     if (!avatar) {
-        throw new ApiError(400, "Avatar file is required")
+        throw new ApiError( 400, "Avatar file is required" )
     }
    
 
+    // create user object - create entry in db 'User'.          - 6
     const user = await User.create({
         fullName,
         avatar: avatar.url,
-        coverImage: coverImage?.url || "",
+        coverImage: coverImage?.url || "",      // safe fallback to ""
         email, 
         password,
         username: username.toLowerCase()
     })
+    // therefore sending all the data to the DataBase of user.model.js
 
+    // remove password and refresh token field from response     - 7
     const createdUser = await User.findById(user._id).select(
         "-password -refreshToken"
     )
 
+
+    // if ( check for user creation )                             - 8
+    // return response - res.status(201).json - meaning the user is successfuly created ( 201 )
+    // else return error - ApiError
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while registering the user")
-    }
+    }       // this is the else response
 
     return res.status(201).json(
         new ApiResponse(200, createdUser, "User registered Successfully")
@@ -122,12 +142,17 @@ const loginUser = asyncHandler( async ( req, res ) => {
     // access and refresh token
     // send cookies
 
+    
+    // req body -> data
     const {email, username, password} = req.body
 
     if( !username && !email ) {
         throw new ApiError( 400, " username or password is required. " )
     }
 
+
+    // username or email is used for login
+    // find the user
     const user = await User.findOne( {
         $or: [ {username}, {email} ]
     })
@@ -136,6 +161,8 @@ const loginUser = asyncHandler( async ( req, res ) => {
         throw new ApiError( 404, "User does not exist." )
     }
 
+
+    // password check
     const isPasswordvalid = await user.isPasswordCorrect(password)
 
     if( !isPasswordvalid ) {
@@ -146,6 +173,7 @@ const loginUser = asyncHandler( async ( req, res ) => {
     // make access and refresh token
 
 
+    // access and refresh token
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens( user._id )
 
     const loggedInUser = await User.findById( user._id ).
@@ -157,6 +185,8 @@ const loginUser = asyncHandler( async ( req, res ) => {
         secure: true
     }
 
+    
+    // send cookies
     return res
     .status( 200 )
     .cookie( "accessToken", accessToken, options )
@@ -176,24 +206,41 @@ const loginUser = asyncHandler( async ( req, res ) => {
 
 
 const logoutUser = asyncHandler( async( req, res ) => {
-    User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
 
         req.user._id,
         {
             $unset: {
                 refreshToken: 1 // this removes the field from document
-                // basically unsets it.
+
+                // refreshToken: 1 tells MongoDB to remove that field
             }
+            // $unset removes a field from a MongoDB document.
         },
 
         {
             new: true
+            // Returns the updated doc (not used here, but safe to include)
         }
     )
 
+    // Cookie options for security
     const options = {
-        httpOnly: true,
+        
+        httpOnly: true,     
+        // Cookie not accessible via JS (helps prevent XSS) i.e., 
+        // Prevents client-side JavaScript from accessing the cookie.
+        // Protects against Cross-Site Scripting (XSS) attacks.
+        // When this is set, the cookie cannot be accessed using document.cookie in the browser.
+
         secure: true
+        // Only sent over HTTPS
+        // The browser will not send the cookie over an insecure (HTTP) connection.
+        // This protects the cookie from being intercepted over the network.
+
+        // Always secure: true for production (HTTPS).
+        // For localhost testing, you may temporarily set it to false.
+
     }
 
     return res
@@ -210,7 +257,7 @@ const logoutUser = asyncHandler( async( req, res ) => {
 const refeshAccessToken = asyncHandler( async( req, res ) => {
 
     const incomingRefreshToken = req.cookie.
-    refeshToken || req.body.refeshToken
+    refreshToken || req.body.refreshToken
 
     if( !incomingRefreshToken ) {
 
@@ -367,7 +414,7 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
 
 const updateUserCoverImage = asyncHandler( async( req, res ) => {
     
-    const coverImageLocalPath = rq.file?.path
+    const coverImageLocalPath = req.file?.path
 
     if( !coverImageLocalPath ) {
         throw new ApiError( 400, " Cover image file is missing. ")
@@ -405,6 +452,11 @@ const updateUserCoverImage = asyncHandler( async( req, res ) => {
 const getUserChannelProfile = asyncHandler( async( req, res ) => {
 
     const { username } = req.params
+    // req.body — Request payload ( mainly in POST / PUT / PATCH )
+    // req.params — URL path parameters
+
+    // Use req.params when value is in the URL path.
+    // Use req.body when value is in the request body (POST/PUT).
 
     if( !username?.trim() ) {
         throw new ApiError( 400, " Username is missing. ")
@@ -476,6 +528,8 @@ const getUserChannelProfile = asyncHandler( async( req, res ) => {
                 email: 1
             }
         }
+        // Your $project is a whitelist of fields you want to return.
+        // Use it to selectively control what the frontend/client gets.
 
     ] )
 

@@ -8,3 +8,4 @@ Videos series based project for practice
 
 - [Model link](https://app.eraser.io/workspace/QgBDVPcrYVvR1wze0AhG?origin=share)
 
+To run the program use : 'npm run dev'
