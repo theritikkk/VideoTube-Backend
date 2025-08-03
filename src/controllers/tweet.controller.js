@@ -5,8 +5,10 @@ import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
-const createTweet = asyncHandler(async (req, res) => {
+const createTweet = asyncHandler( async ( req, res ) => {
     //TODO: create tweet
+
+    
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {

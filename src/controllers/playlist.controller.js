@@ -140,15 +140,21 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError( 400, " Only owner can add video to this playlist. ");
     }
 
+    // To add a video to a playlist, but only if it's not already in the playlist.
+
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
         playlist?._id,
         {
             $addToSet: {
                 video: videoId
             }
+            // '$addToSet' is a MongoDB operator that adds 'videoId' to the 'videos' array 
+            // only if it's not already present.
+            // If 'videoId' is already in the array, nothing happens — prevents duplicates.
         },
         {
             new: true
+            // ensuring that the updated playlist document is returned, not the original one.
         }
     );
 
@@ -205,6 +211,16 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         },
     );
 
+    // $pull is a MongoDB operator that removes elements from 
+    // an array that match a specified value or condition.
+
+    // In this case, it's removing videoId 
+    // from the 'videos' array field inside the playlist.
+
+    // { new: true } ->  Ensures that the function returns the updated document, not the old one.
+    // So updatedPlaylist will contain the new version with the video removed.
+
+
     return res
     .status(200)
     .json(
@@ -217,7 +233,30 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     
     // TODO: delete playlist
 
-    const {playlistId} = req.params
+    const { playlistId } = req.params;
+
+    if( !isValidObjectId(playlistId) ) {
+        throw new ApiError( 400, " Invalid playlistId " );
+    }
+
+    const playlist = await Playlist.findById( playlistId );
+
+    if( !playlist ) {
+        throw new ApiError( 404, " Playlist does not exist. ");
+    }
+
+    if( playlist.owner.toString() !== req.user?._id.toString() ) {
+        throw new ApiError( 400, " Only the owner can delete this playlist. " );
+    }
+
+    await Playlist.findByIdAndDelete( playlistId?._id )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse( 200, {}, " Playlist has been successfully deleted. " )
+    );
+
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
@@ -250,10 +289,14 @@ const updatePlaylist = asyncHandler(async (req, res) => {
                 as: "videos"
             }
         },
+        // For each _id in the playlist’s videos array, fetches the corresponding Video document 
+        // and puts it inside videos array.
         {
             $match: {
                 "videos.isPublished": true
             }
+            //  this '$match' is not filtering inside the array, 
+            // it only removes entire playlist documents that don’t have any published video.
         },
         {
             $lookup: {
@@ -262,6 +305,8 @@ const updatePlaylist = asyncHandler(async (req, res) => {
                 foreignField: "_id",
                 as: "owner"
             }
+            // Joins the users collection to fetch playlist owner info like username, avatar, etc.
+            // Result is in the owner array.
         },
         {
             $addFields: {
@@ -275,6 +320,12 @@ const updatePlaylist = asyncHandler(async (req, res) => {
                     $first: "$owner"
                 }
             }
+            // Adds:
+            // 1)   totalVideos: count of videos in the playlist
+                
+            // 2)   totalViews: sum of views across all videos in the playlist
+
+            // 3)   Flattens owner array to just a single object
         },
         {
             $project: {
@@ -300,6 +351,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
                     "avatar.url": 1
                 }
             }
+            // Outputs :- Playlist metadata, Each video in the list by 'videos' , The playlist owner by 'owner' .
         }
     ]);
 
