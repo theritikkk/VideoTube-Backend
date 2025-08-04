@@ -46,18 +46,25 @@ const getUserTweets = asyncHandler( async ( req, res ) => {
     const tweets = await Tweet.aggregate([
 
         {
+            // $match — Filter Tweets by Owner
             $match: {
                 owner: new mongoose.Types.ObjectId(userId)
             }
+            // Retrieves tweets where owner === userId
+            // Only that user’s tweets are processed in the pipeline
         },
 
         {
+            // $lookup — Join with 'users' to Get 'owner' Details
             $lookup: {
                 from: "users",
                 localField: "owner",
                 foreignField: "_id",
                 as: "ownerDetails",
-
+                // Joins the users collection to get 'user' info for each tweet's 'owner'
+                // Adds 'ownerDetails' array to each tweet
+                
+                // Limits the fetched fields to 'username' and 'avatar.url'
                 pipeline: [
                     {
                         $project: {
@@ -71,7 +78,10 @@ const getUserTweets = asyncHandler( async ( req, res ) => {
         },
 
         {
+            // $lookup — Get 'likes' Info from 'likes' Collection
             $lookup: {
+                // Joins the likes collection to find all likes for the tweet
+                // Adds them to 'likeDetails' array
                 from: "likes",
                 localField: "_id",
                 foreignField: "tweet",
@@ -79,6 +89,7 @@ const getUserTweets = asyncHandler( async ( req, res ) => {
 
                 pipeline: [
                     {
+                        // Only keeps the likedBy field in each like document
                         $project: {
                             likedBy: 1,
                         },
@@ -89,16 +100,20 @@ const getUserTweets = asyncHandler( async ( req, res ) => {
         },
 
         {
+            // $addFields — Add Calculated Fields
             $addFields: {
-
+                
+                // likesCount: total number of likes (by counting elements in likeDetails)
                 likesCount: {
                     $size: "$likeDetails",
                 },
 
+                // ownerDetails: flattens the 'ownerDetails' array to a single object
                 ownerDetails: {
                     $first: "$ownerDetails",
                 },
 
+                // isLiked: checks if the 'currently logged-in user' liked the 'tweet'
                 isLiked: {
                     $cond: {
                         if: {$in: [req.user?._id, "$likeDetails.likedBy"]},
@@ -111,12 +126,15 @@ const getUserTweets = asyncHandler( async ( req, res ) => {
         },
 
         {
+            // $sort — Most Recent First
             $sort: {
                 createdAt: -1
             }
+            // i.e., sorting tweets in descending order of 'time of creation'.
         },
 
         {
+            // only the relevant fields for the frontend
             $project: {
                 content: 1,
                 ownerDetails: 1,
@@ -144,7 +162,7 @@ const updateTweet = asyncHandler( async ( req, res ) => {
     const { tweetId } = req.params;
 
     if( !content ) {
-        throw new ApiError( 400, " No content in the given section. " );
+        throw new ApiError( 400, " No content was given by the user. " );
     }
 
     if( !isValidObjectId( tweetId ) ) {
@@ -191,7 +209,7 @@ const deleteTweet = asyncHandler( async ( req, res ) => {
 
     const { tweetId } = req.params;
 
-    if( !isValidObjectId( tweetId ) ) {
+    if( !isValidObjectId( tweetId ) ) {
         throw new ApiError( 400, " Invalid tweetId. " );
     }
 
@@ -206,7 +224,7 @@ const deleteTweet = asyncHandler( async ( req, res ) => {
     }
 
     await Tweet.findByIdAndDelete( tweetId );
-
+    
     return res
     .status(200)
     .json( 

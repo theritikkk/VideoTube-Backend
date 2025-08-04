@@ -585,8 +585,8 @@ const getWatchHistory = asyncHandler( async( req, res ) => {
                         }
                     },
 
-                    {   // since, lookup gives array, we try to get the first value.
-
+                    {   
+                        // since, lookup gives array, we try to get the first value.
                         $addFields: {
                             owner: {
                                 $first: "$owner"
