@@ -66,36 +66,37 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
 ## ⚙️ Setup Instructions : 
 
 1. Clone the repo:
-  '''
+    ```
     git clone https://github.com/theritikkk/youtube-twitter.git
     cd youtube-twitter
 
     'Install dependencies: npm install'
-  '''
+  ```
 
 2. Create a .env file and add your keys:
-
+    ```
         .env
         YOUTUBE_API_KEY=your_youtube_api_key
         TWITTER_API_KEY=your_twitter_api_key
         TWITTER_API_SECRET=your_twitter_secret
         TWITTER_ACCESS_TOKEN=your_access_token
         TWITTER_ACCESS_SECRET=your_access_secret
-            
-3. 'Run the app: npm start'
+    ```
+
+3. Run the app: 
+    ```npm start```
 
 
 
 ## 🧪 Usage : 
 Fetch YouTube video info:
 
-GET /api/youtube/:videoId
-Post tweet about video:
+``` GET : /api/youtube/:videoId ```
+``` Post : tweet about video ```
+``` POST : /api/twitter/tweet ```
 
-POST /api/twitter/tweet
-📸 Screenshots / Demo
-Add screenshots or link to demo video here 🎥
 
+## 📸 Screenshots / Demo :
 
 
 ---
