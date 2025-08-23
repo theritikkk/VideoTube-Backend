@@ -38,7 +38,7 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
 
 
 
-## 📂 Project Structure : 
+## 📂 Project Structure
 .
 ├── app.js # Main Express app configuration
 ├── index.js # Entry point
