@@ -69,9 +69,9 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
     ```
     git clone https://github.com/theritikkk/youtube-twitter.git
     cd youtube-twitter
-
-    'Install dependencies: npm install'
-  ```
+    ```
+    Install dependencies: 
+        ``` npm install ```
 
 2. Create a .env file and add your keys:
     ```
