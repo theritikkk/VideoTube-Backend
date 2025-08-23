@@ -39,6 +39,7 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
 
 
 ## 📂 Project Structure
+
 .
 ├── app.js # Main Express app configuration
 ├── index.js # Entry point
@@ -52,6 +53,7 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
 ├── utils/ # Helper functions
 ├── package.json
 └── README.md
+
 
 
 
