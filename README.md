@@ -37,22 +37,24 @@ This project demonstrates how to connect multiple third-party APIs, handle authe
 ---
 
 
-
 ## 📂 Project Structure
 
+```
 .
-├── app.js # Main Express app configuration
-├── index.js # Entry point
-├── constants.js # Constants (API URLs, config values, etc.)
-├── controllers/ # Route controllers (YouTube, Twitter logic)
-├── db/ # Database connection and setup
-├── middleware/ # Custom middleware (auth, error handling)
-├── models/ # Data models (User, Video, Tweet)
-├── routes/ # API routes
-├── services/ # YouTube & Twitter service handlers
-├── utils/ # Helper functions
+├── app.js              # Main Express app configuration
+├── index.js            # Entry point
+├── constants.js        # Constants (API URLs, config values, etc.)
+├── controllers/        # Route controllers (YouTube, Twitter logic)
+├── db/                 # Database connection and setup
+├── middleware/         # Custom middleware (auth, error handling)
+├── models/             # Data models (User, Video, Tweet)
+├── routes/             # API routes
+├── services/           # YouTube & Twitter service handlers
+├── utils/              # Helper functions
 ├── package.json
 └── README.md
+```
+
 
 
 
